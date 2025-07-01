@@ -17,7 +17,7 @@ async function bootstrap() {
   // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('Restaurante API')
-    .setDescription('Gestión de productos')
+    .setDescription('Documentacion API')
     .setVersion('1.0')
     .build();
 

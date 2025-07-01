@@ -8,15 +8,6 @@ export class ClientesService {
   private clientes: Cliente[] = [];
   private contador = 1;
 
-  create(createClienteDto: CreateClienteDto): Cliente {
-    const nuevoCliente: Cliente = {
-      id: this.contador++,
-      ...createClienteDto,
-    };
-    this.clientes.push(nuevoCliente);
-    return nuevoCliente;
-  }
-
   getAll(): Cliente[] {
     return this.clientes;
   }
@@ -25,6 +16,15 @@ export class ClientesService {
     const cliente = this.clientes.find((c) => c.id === id);
     if (!cliente) throw new NotFoundException('Cliente no encontrado');
     return cliente;
+  }
+
+  create(createClienteDto: CreateClienteDto): Cliente {
+    const nuevoCliente: Cliente = {
+      id: this.contador++,
+      ...createClienteDto,
+    };
+    this.clientes.push(nuevoCliente);
+    return nuevoCliente;
   }
 
   update(id: number, dto: UpdateClienteDto): Cliente {
