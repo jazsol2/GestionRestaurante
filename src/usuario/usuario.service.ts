@@ -3,7 +3,6 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { Usuario } from './entities/usuario.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class UsuarioService {
