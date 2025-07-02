@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsNumber, ValidateNested } from 'class-validator';
+import { IsString, IsArray, IsNumber, ValidateNested, ArrayNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ProductoEnPedido {
@@ -14,6 +14,7 @@ export class CreatePedidoDto {
   clienteId: number;
 
   @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => ProductoEnPedido)
   productos: ProductoEnPedido[];

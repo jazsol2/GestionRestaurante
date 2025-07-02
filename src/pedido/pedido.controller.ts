@@ -19,8 +19,8 @@ export class PedidoController {
 
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo pedido' })
-  create(@Body() dto: CreatePedidoDto) {
-    return this.pedidoService.create(dto);
+  create(@Body() createPediddoDto: CreatePedidoDto) {
+    return this.pedidoService.create(createPediddoDto);
   }
 
   @Get()

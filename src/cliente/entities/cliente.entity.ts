@@ -15,5 +15,5 @@ export class Cliente {
   email: string;
 
   @Column()
-  telefono: number;
+  telefono: string;
 }

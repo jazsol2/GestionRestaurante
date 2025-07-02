@@ -20,7 +20,9 @@ model User {
 model Cliente {
   id        Int      @id @default(autoincrement())
   nombre    String
+  apellido  String
   email     String   @unique
+  telefono  String
   pedidos   Pedido[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,21 +30,31 @@ model Cliente {
 
 model Producto {
   id          Int      @id @default(autoincrement())
-  nombre      String
+  nombre      String   @unique
   precio      Float
   descripcion String?
-  pedidos     Pedido[]
+  stock       Int 
+  pedidos     PedidoDetalle[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Pedido {
-  id         Int      @id @default(autoincrement())
+  id         Int             @id @default(autoincrement())
   clienteId  Int
-  productoId Int
-  cantidad   Int
-  cliente    Cliente  @relation(fields: [clienteId], references: [id])
-  producto   Producto @relation(fields: [productoId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  cliente    Cliente         @relation(fields: [clienteId], references: [id])
+  detalles   PedidoDetalle[]
+  total      Float
+  estado     String          @default("pendiente")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model PedidoDetalle {
+  id          Int      @id @default(autoincrement())
+  pedidoId    Int
+  productoId  Int
+  cantidad    Int
+  pedido      Pedido   @relation(fields: [pedidoId], references: [id])
+  producto    Producto @relation(fields: [productoId], references: [id])
 }

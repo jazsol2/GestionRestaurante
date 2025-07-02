@@ -10,6 +10,10 @@ export class CreateProductoDto {
   descripcion: string;
 
   @IsNumber()
-  @Min(0.1)
+  @Min(0.10)
   precio: number;
+
+  @IsNumber()
+  @Min(1)
+  stock: number;
 }

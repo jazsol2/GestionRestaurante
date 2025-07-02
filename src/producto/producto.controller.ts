@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Post,
-  Body,
-  Put,
-  Delete,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, ParseIntPipe,} from '@nestjs/common';
 import { ProductosService } from './producto.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -20,8 +11,8 @@ export class ProductoController {
 
   @Post()
   @ApiOperation({ summary: 'Crear un producto' })
-  create(@Body() dto: CreateProductoDto) {
-    return this.productoService.createProducto(dto);
+  create(@Body() createProductoDto: CreateProductoDto) {
+    return this.productoService.create(createProductoDto);
   }
 
   @Get()
@@ -32,8 +23,8 @@ export class ProductoController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un producto por la ID' })
-  getProducto(@Param('id', ParseIntPipe) id: number) {
-    return this.productoService.getProducto(id);
+  getProducto(@Body('id', ParseIntPipe) id: number) {
+    return this.productoService.getProducto(id);  
   }
 
   @Put(':id')

@@ -1,50 +1,85 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
-import { Producto } from './entities/producto.entity';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ProductosService {
-  private productos: Producto[] = [];
-  private contador = 1;
+  constructor(private readonly prisma: PrismaService) {}
 
-  getAll(): Producto[] {
-    return this.productos;
-  }
+  // Crear producto
+  async create(createProductoDto: CreateProductoDto) {
 
-  getProducto(id: number): Producto {
-    const producto = this.productos.find((p) => p.id === id);
-    if (!producto) {
-      throw new NotFoundException(`Producto con id ${id} no existe`);
+    // busqueda de producto existente
+    const existe = await  this.prisma.producto.findUnique({
+      where: {nombre:createProductoDto.nombre},
+    });
+
+    if (existe){
+      throw new NotFoundException (`El producto ${createProductoDto.nombre} ya  esxiste.`)
     }
-    return producto;
-  }
+    const producto = await this.prisma.producto.create({
+      data: createProductoDto,
+    });
 
-  createProducto(dto: CreateProductoDto): Producto {
-    const nuevo: Producto = {
-      id: this.contador++,
-      ...dto,
+    return {
+      mensaje: 'Producto creado exitosamente',
+      data: producto,
     };
-    this.productos.push(nuevo);
-    return nuevo;
   }
 
-  update(id: number, dto: UpdateProductoDto): Producto {
-    const index = this.productos.findIndex((p) => p.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Producto con id ${id} no existe`);
-    }
-    const actualizado = { ...this.productos[index], ...dto };
-    this.productos[index] = actualizado;
-    return actualizado;
+  // Obtener todos los productos
+  async getAll() {
+    const productos = await this.prisma.producto.findMany();
+    return {
+      mensaje: 'Lista de productos',
+      data: productos,
+    };
   }
 
-  delete(id: number): string {
-    const lengthAntes = this.productos.length;
-    this.productos = this.productos.filter((p) => p.id !== id);
-    if (this.productos.length === lengthAntes) {
-      throw new NotFoundException(`Producto con id ${id} no existe`);
+  // Obtener un producto por ID
+  async getProducto(id: number) {
+    const producto = await this.prisma.producto.findUnique({
+      where: { id },
+    });
+
+    if (!producto) {
+      throw new NotFoundException(` Producto con id ${id} no existe`);
     }
-    return `Producto con id ${id} eliminado correctamente`;
+
+    return {
+      mensaje: `✅ Producto con id ${id} encontrado`,
+      data: producto,
+    };
+  }
+
+  // Actualizar producto
+  async update(id: number, dto: UpdateProductoDto) {
+    await this.getProducto(id); // Verifica si existe
+
+    await this.prisma.producto.update({
+      where: { id },
+      data: dto,
+    });
+
+    const actualizado = await this.prisma.producto.findUnique({ where: { id } });
+
+    return {
+      mensaje: `📝 Producto con id ${id} actualizado correctamente`,
+      data: actualizado,
+    };
+  }
+
+  // Eliminar producto
+  async delete(id: number) {
+    await this.getProducto(id); // Verifica si existe
+
+    await this.prisma.producto.delete({
+      where: { id },
+    });
+
+    return {
+      mensaje: `🗑️ Producto con id ${id} eliminado correctamente`,
+    };
   }
 }

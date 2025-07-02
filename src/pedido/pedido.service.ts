@@ -1,64 +1,88 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Pedido } from './entities/pedido.entity';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
-import { v4 as uuid } from 'uuid';
-import { ProductosService } from '../producto/producto.service';
 import { ClientesService } from '../cliente/cliente.service';
+import { ProductosService } from '../producto/producto.service';
 
 @Injectable()
 export class PedidoService {
-  private pedidos: Pedido[] = [];
-
+  updateEstado(id: number, arg1: any) {
+    throw new Error('Method not implemented.');
+  }
+  getPedido(id: number) {
+    throw new Error('Method not implemented.');
+  }
+  getAll() {
+    throw new Error('Method not implemented.');
+  }
   constructor(
-    private readonly productoService: ProductosService,
+    private readonly prisma: PrismaService,
     private readonly clienteService: ClientesService,
+    private readonly productoService: ProductosService,
   ) {}
 
-  async create(dto: CreatePedidoDto): Promise<Pedido> {
-    const cliente = await this.clienteService.getById(dto.clienteId);
-    if (!cliente) throw new NotFoundException('Cliente no encontrado');
+  async create(createPedidoDto: CreatePedidoDto) {
+  const cliente = await this.clienteService.getById(createPedidoDto.clienteId);
+  if (!cliente) throw new NotFoundException('Cliente no encontrado');
 
-    let total = 0;
-    for (const item of dto.productos) {
-      const producto = await this.productoService.getProducto(item.productoId);
-      if (!producto)
-        throw new NotFoundException(
-          `Producto con id ${item.productoId} no existe`,
-        );
-      total += producto.precio * item.cantidad;
+  let total = 0;
+  const detalles = [];
+
+  if (
+    !Array.isArray(createPedidoDto.productos) ||
+    createPedidoDto.productos.length === 0 ||
+    createPedidoDto.productos.some(p => p == null)
+  ) {
+    throw new NotFoundException('Lista de productos inválida o contiene valores nulos');
+  }
+
+  for (const item of createPedidoDto.productos) {
+    const productoId = typeof item === 'object' ? item.productoId : item;
+    const cantidad = typeof item === 'object' && item.cantidad ? item.cantidad : 1;
+
+    const producto = await this.productoService.getProducto(productoId);
+    if (!producto) {
+      throw new NotFoundException(`Producto con id ${productoId} no existe`);
     }
 
-    const nuevoId =
-      this.pedidos.length > 0
-        ? this.pedidos[this.pedidos.length - 1].id + 1
-        : 1;
+    if (cantidad <= 0 || cantidad > 100) {
+      throw new NotFoundException(`Cantidad inválida para el producto ${productoId}`);
+    }
 
-    const pedido: Pedido = {
-      id: nuevoId,
-      clienteId: dto.clienteId,
-      productos: dto.productos,
+    if (producto.data.stock < cantidad) {
+      throw new NotFoundException(`Stock insuficiente para producto ${productoId}`);
+    }
+
+    total += producto.data.precio * cantidad;
+
+    detalles.push({
+      productoId,
+      cantidad,
+    });
+  }
+
+  // Crear el pedido con sus detalles
+  const pedido = await this.prisma.pedido.create({
+    data: {
+      clienteId: createPedidoDto.clienteId,
       total,
-      fecha: new Date().toISOString(),
-      estado: 'pendiente',
-    };
+      detalles: {
+        create: detalles, // Prisma creará todos los registros en PedidoDetalle
+      },
+    },
+    include: {
+      cliente: true,
+      detalles: {
+        include: {
+          producto: true,
+        },
+      },
+    },
+  });
 
-    this.pedidos.push(pedido);
-    return pedido;
-  }
-
-  getAll(): Pedido[] {
-    return this.pedidos;
-  }
-
-  getPedido(id: number): Pedido {
-    const pedido = this.pedidos.find((p) => p.id === id);
-    if (!pedido) throw new NotFoundException('Pedido no encontrado');
-    return pedido;
-  }
-
-  updateEstado(id: number, nuevoEstado: Pedido['estado']): Pedido {
-    const pedido = this.getPedido(id);
-    pedido.estado = nuevoEstado;
-    return pedido;
-  }
+  return {
+    mensaje: '✅ Pedido creado exitosamente',
+    data: pedido,
+  };
+}
 }
