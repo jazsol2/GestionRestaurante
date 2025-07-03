@@ -23,7 +23,7 @@ export class ProductoController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un producto por la ID' })
-  getProducto(@Body('id', ParseIntPipe) id: number) {
+  getProducto(@Param('id', ParseIntPipe) id: number) {
     return this.productoService.getProducto(id);  
   }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { Usuario } from './entities/usuario.entity';
@@ -9,30 +9,68 @@ export class UsuarioService {
   constructor(private prisma: PrismaService) {} 
   
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario>   {
-    console.log('DTO recibido:', createUsuarioDto);
-    
-    const usuario = await this.prisma.user.create({
-      data: {
-        ...createUsuarioDto,
-      },
+    const existe = await this.prisma.user.findUnique({
+      where:{email: createUsuarioDto.email},
     });
-    return usuario;
+    
+    if (existe){
+      throw new ConflictException('Correo electronico ya registrado')
+    }
+
+    const usuario = await this.prisma.user.create({
+      data: createUsuarioDto,
+    });
+
+    return {
+      message: 'Usuario se creo correctamente',
+      data: usuario,
+    };
   }
 
-  async findAll(): Promise<Usuario[]> {
+  async findAll() {
     const usuarios = await this.prisma.user.findMany();
-    return usuarios;
+    return {
+      message: 'Lista encontrada',
+      data: usuarios,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} usuario`;
+  async findOne(id: number) {
+    const usuario = await this.prisma.user.findUnique({
+      where:{id},
+    });
+
+    if(!usuario){
+      throw new NotFoundException ('Usuario no encontrado');
+    }
+    return {
+      message: 'Usuario encontrado',
+      data: usuario,
+    };
   }
 
-  update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
-    return `This action updates a #${id} usuario`;
+  async update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
+    await this.findOne(id);
+
+     const usuarioActualizado = await this.prisma.user.update({
+      where:{id},
+      data: updateUsuarioDto
+     })
+    return {
+      message:'Usuario se actulizao correctamente',
+      data: usuarioActualizado,
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} usuario`;
+  async remove(id: number) {
+    await this.findOne(id);
+
+    await this.prisma.user.delete({
+    where: {id},
+    });
+
+   return{
+    message: 'Se elimino el usuario correctamente',
+   };
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { ClientesService } from '../cliente/cliente.service';
@@ -6,15 +6,7 @@ import { ProductosService } from '../producto/producto.service';
 
 @Injectable()
 export class PedidoService {
-  updateEstado(id: number, arg1: any) {
-    throw new Error('Method not implemented.');
-  }
-  getPedido(id: number) {
-    throw new Error('Method not implemented.');
-  }
-  getAll() {
-    throw new Error('Method not implemented.');
-  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly clienteService: ClientesService,
@@ -81,8 +73,84 @@ export class PedidoService {
   });
 
   return {
-    mensaje: '✅ Pedido creado exitosamente',
+    mensaje: 'Pedido creado exitosamente',
     data: pedido,
   };
 }
+
+// Obtener todos los pedidos con detalles y cliente
+  async getAll() {
+    return this.prisma.pedido.findMany({
+      include: {
+        cliente: true,
+        detalles: {
+          include: {
+            producto: true,
+          },
+        },
+      },
+    });
+  }
+
+  // Obtener un pedido por id con detalles y cliente
+  async getPedido(id: number) {
+    const pedido = await this.prisma.pedido.findUnique({
+      where: { id },
+      include: {
+        cliente: true,
+        detalles: {
+          include: {
+            producto: true,
+          },
+        },
+      },
+    });
+
+    if (!pedido) throw new NotFoundException(`Pedido con ${id} no encontrado`);
+    return {
+      message:'Pedido encontrado',
+      data: pedido,
+    };
+  }
+
+  // Actualizar estado del pedido
+  async updateEstado(id: number, nuevoEstado: string) {
+    const pedidoExistente = await this.getPedido(id); // Verificar si existe
+    const pedidoActualizado = await this.prisma.pedido.update({
+      where: { id },
+      data: { estado: nuevoEstado },
+      include: {
+        cliente: true,
+        detalles:{
+          include:{
+            producto: true,
+          },
+        },
+      },
+    });
+    return  {
+    mensaje: 'Estado del pedido actualizado correctamente',
+    data: pedidoActualizado,
+  };
+  }
+
+  // Eliminar pedido
+  async delete(id: number) {
+    const pedido = await this.getPedido(id); // Verificar si existe
+    
+    await this.prisma.pedidoDetalle.deleteMany({
+    where: { pedidoId: id },
+    });
+
+    await this.prisma.pedido.delete({ 
+      where: { id },
+     });
+    return {
+      message: 'Pedido eliminado correctamente',
+      data: pedido,
+    };
+  } catch (error) {
+    console.error(' Error al eliminar pedido:', error);
+    throw new InternalServerErrorException('No se pudo eliminar el pedido');
+  }
 }

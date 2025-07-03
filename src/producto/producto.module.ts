@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule,ProductoModule],
   controllers: [ProductoController],
   providers: [ProductosService],
   exports: [ProductosService],

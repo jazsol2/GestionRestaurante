@@ -48,7 +48,7 @@ export class ProductosService {
     }
 
     return {
-      mensaje: `✅ Producto con id ${id} encontrado`,
+      mensaje: `Producto con id ${id} encontrado`,
       data: producto,
     };
   }
@@ -65,7 +65,7 @@ export class ProductosService {
     const actualizado = await this.prisma.producto.findUnique({ where: { id } });
 
     return {
-      mensaje: `📝 Producto con id ${id} actualizado correctamente`,
+      mensaje: `Producto con id ${id} actualizado correctamente`,
       data: actualizado,
     };
   }
@@ -79,7 +79,7 @@ export class ProductosService {
     });
 
     return {
-      mensaje: `🗑️ Producto con id ${id} eliminado correctamente`,
+      mensaje: `Producto con id ${id} eliminado correctamente`,
     };
   }
 }

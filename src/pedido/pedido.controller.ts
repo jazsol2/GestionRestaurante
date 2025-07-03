@@ -6,11 +6,13 @@ import {
   Param,
   Put,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UpdateEstadoDto } from './dto/update-estado.dto';
+import { DeleteManyModel } from 'typeorm';
 
 @ApiTags('pedidos')
 @Controller('pedidos')
@@ -39,5 +41,13 @@ export class PedidoController {
   @ApiOperation({ summary: 'Actualizar estado del pedido' })
   updateEstado(@Param('id') id: number, @Body() body: UpdateEstadoDto) {
     return this.pedidoService.updateEstado(id, body.estado as any);
+  }
+
+  @Delete(':id')
+  @ApiOperation({summary : 'Eliminar pedido'})
+  @ApiResponse({ status: 200, description: 'Pedido eliminado correctamente' })
+  @ApiResponse({ status: 404, description: 'Pedido no encontrado' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+  return this.pedidoService.delete(id);
   }
 }

@@ -9,7 +9,6 @@ export class UsuarioController {
 
   @Post()
   create(@Body() createUsuarioDto: CreateUsuarioDto) {      
-    console.log('DTO recibido en controlador:', createUsuarioDto);
     return this.usuarioService.create(createUsuarioDto);
   }
   @Get()
