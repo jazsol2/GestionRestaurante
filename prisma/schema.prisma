@@ -60,5 +60,5 @@ model PedidoDetalle {
   cantidad    Int
   pedido      Pedido   @relation(fields: [pedidoId], references: [id])
   producto    Producto @relation(fields: [productoId], references: [id])
-  isActive  Boolean  @default(true)
+  isActive    Boolean  @default(true)
 }
