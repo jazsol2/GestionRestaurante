@@ -32,12 +32,14 @@ export class ClientesService {
   }
 
   async getAll() {
-    return this.prisma.cliente.findMany() ;
+    return this.prisma.cliente.findMany({
+      where: {isActive: true}
+    }) ;
   }
 
   async getById(id: number) {
     const cliente = await this.prisma.cliente.findUnique({
-      where: { id },  
+      where: { id, isActive: true },  
     });
     if (!cliente) throw new NotFoundException('Cliente no encontrado');
     return cliente;
@@ -56,8 +58,9 @@ export class ClientesService {
 
   async remove(id: number) {
     await this.getById(id); // Verifica si el cliente existe
-    return this.prisma.cliente.delete({
+    await this.prisma.cliente.update({
       where: { id },  
+      data: {isActive: false},
     });
     return { deleted: true, message: 'Cliente eliminado correctamente'};
   }

@@ -32,6 +32,7 @@ export class UsuarioService {
     return {
       message: 'Lista encontrada',
       data: usuarios,
+      where: {isActive: true},
     };
   }
 
@@ -46,6 +47,7 @@ export class UsuarioService {
     return {
       message: 'Usuario encontrado',
       data: usuario,
+      where: {isActive: true},
     };
   }
 
@@ -65,8 +67,9 @@ export class UsuarioService {
   async remove(id: number) {
     await this.findOne(id);
 
-    await this.prisma.user.delete({
+    await this.prisma.user.update({
     where: {id},
+    data: {isActive: false}
     });
 
    return{

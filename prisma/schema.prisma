@@ -26,6 +26,7 @@ model Cliente {
   pedidos   Pedido[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
 }
 
 model Producto {
@@ -37,6 +38,7 @@ model Producto {
   pedidos     PedidoDetalle[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  isActive  Boolean  @default(true)
 }
 
 model Pedido {
@@ -48,6 +50,7 @@ model Pedido {
   estado     String          @default("pendiente")
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
+  isActive  Boolean          @default(true)
 }
 
 model PedidoDetalle {
@@ -57,4 +60,5 @@ model PedidoDetalle {
   cantidad    Int
   pedido      Pedido   @relation(fields: [pedidoId], references: [id])
   producto    Producto @relation(fields: [productoId], references: [id])
+  isActive  Boolean  @default(true)
 }

@@ -34,13 +34,14 @@ export class ProductosService {
     return {
       mensaje: 'Lista de productos',
       data: productos,
+      where:{activo: true},
     };
   }
 
   // Obtener un producto por ID
   async getProducto(id: number) {
     const producto = await this.prisma.producto.findUnique({
-      where: { id },
+      where: { id , activo: true },
     });
 
     if (!producto) {
@@ -74,8 +75,9 @@ export class ProductosService {
   async delete(id: number) {
     await this.getProducto(id); // Verifica si existe
 
-    await this.prisma.producto.delete({
+    await this.prisma.producto.update({
       where: { id },
+      data:{activo: false}
     });
 
     return {

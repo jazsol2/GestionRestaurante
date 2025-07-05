@@ -87,6 +87,7 @@ export class PedidoService {
           include: {
             producto: true,
           },
+          where:{isActive: true}
         },
       },
     });
@@ -95,7 +96,7 @@ export class PedidoService {
   // Obtener un pedido por id con detalles y cliente
   async getPedido(id: number) {
     const pedido = await this.prisma.pedido.findUnique({
-      where: { id },
+      where: { id, isActive: true },
       include: {
         cliente: true,
         detalles: {
@@ -138,12 +139,14 @@ export class PedidoService {
   async delete(id: number) {
     const pedido = await this.getPedido(id); // Verificar si existe
     
-    await this.prisma.pedidoDetalle.deleteMany({
-    where: { pedidoId: id },
+    await this.prisma.pedidoDetalle.updateMany({
+      where: { pedidoId: id },
+      data: {isActive: false}
     });
 
-    await this.prisma.pedido.delete({ 
+    await this.prisma.pedido.update({ 
       where: { id },
+      data:{isActive: false}
      });
     return {
       message: 'Pedido eliminado correctamente',
