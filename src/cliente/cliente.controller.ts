@@ -1,4 +1,12 @@
-import {Controller, Get, Post, Put, Delete, Body, Param,} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ClientesService } from './cliente.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
@@ -16,29 +24,41 @@ export class ClienteController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lista de clientes' })
+  @ApiOperation({ summary: 'Lista de clientes activos' })
   getAll() {
-    return this.clientesService.getAll(); // <- método en memoria
+    return this.clientesService.getAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar por ID de cliente' })
+  @ApiOperation({ summary: 'Buscar cliente activo por ID' })
   getById(@Param('id', ParseIntPipe) id: number) {
     return this.clientesService.getById(id);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Actualizar Cliente' })
+  @ApiOperation({ summary: 'Actualizar un cliente activo' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateClienteDto: UpdateClienteDto,
   ) {
-    return this.clientesService.update(+id, updateClienteDto);
+    return this.clientesService.update(id, updateClienteDto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar cliente' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.clientesService.remove(+id);
+  @Patch('desactivado/:id')
+  @ApiOperation({ summary: 'Desactivar cliente' })
+  desactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.clientesService.desactivate(id);
+  }
+
+  @Patch('restaurado/:id')
+  @ApiOperation({ summary: 'Restaurar cliente' })
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.clientesService.restore(id);
+  }
+
+  @Get('inactivos/listado')
+  @ApiOperation({ summary: 'Listar clientes desactivado' })
+  getAllInactive() {
+    return this.clientesService.getAllInactive();
   }
 }

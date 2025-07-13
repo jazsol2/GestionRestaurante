@@ -17,7 +17,7 @@ CREATE TABLE "Cliente" (
     "nombre" TEXT NOT NULL,
     "apellido" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "telefono" INTEGER NOT NULL,
+    "telefono" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -64,6 +64,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Cliente_email_key" ON "Cliente"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Producto_nombre_key" ON "Producto"("nombre");
 
 -- AddForeignKey
 ALTER TABLE "Pedido" ADD CONSTRAINT "Pedido_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,23 +1,33 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateProductoDto } from './dto/create-producto.dto';
-import { UpdateProductoDto } from './dto/update-producto.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+import { CreateProductoDto } from "./dto/create-producto.dto";
+import { UpdateProductoDto } from "./dto/update-producto.dto";
 
 @Injectable()
 export class ProductosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Crear producto
   async create(createProductoDto: CreateProductoDto) {
-
-    // busqueda de producto existente
-    const existe = await  this.prisma.producto.findUnique({
-      where: {nombre:createProductoDto.nombre},
+    const existe = await this.prisma.producto.findUnique({
+      where: { nombre: createProductoDto.nombre },
     });
 
-    if (existe){
-      throw new NotFoundException (`El producto ${createProductoDto.nombre} ya  esxiste.`)
+    if (existe && existe.isActive) {
+      throw new NotFoundException(`El producto ${createProductoDto.nombre} ya existe.`);
     }
+
+    if (existe && !existe.isActive) {
+      // Si existe pero está inactivo, puedes restaurarlo y actualizar datos si quieres
+      const productoRestaurado = await this.prisma.producto.update({
+        where: { id: existe.id },
+        data: { ...createProductoDto, isActive: true },
+      });
+      return {
+        mensaje: `Producto restaurado y actualizado exitosamente`,
+        data: productoRestaurado,
+      };
+    }
+
     const producto = await this.prisma.producto.create({
       data: createProductoDto,
     });
@@ -28,23 +38,23 @@ export class ProductosService {
     };
   }
 
-  // Obtener todos los productos
   async getAll() {
-    const productos = await this.prisma.producto.findMany();
+    const productos = await this.prisma.producto.findMany({
+      where: { isActive: true },
+    });
     return {
-      mensaje: 'Lista de productos',
+      mensaje: 'Lista de productos activos',
       data: productos,
     };
   }
 
-  // Obtener un producto por ID
   async getProducto(id: number) {
     const producto = await this.prisma.producto.findUnique({
       where: { id },
     });
 
-    if (!producto) {
-      throw new NotFoundException(` Producto con id ${id} no existe`);
+    if (!producto || !producto.isActive) {
+      throw new NotFoundException(`Producto con id ${id} no existe o está inactivo`);
     }
 
     return {
@@ -53,16 +63,13 @@ export class ProductosService {
     };
   }
 
-  // Actualizar producto
   async update(id: number, dto: UpdateProductoDto) {
-    await this.getProducto(id); // Verifica si existe
+    await this.getProducto(id); // Verifica si existe y está activo
 
-    await this.prisma.producto.update({
+    const actualizado = await this.prisma.producto.update({
       where: { id },
       data: dto,
     });
-
-    const actualizado = await this.prisma.producto.findUnique({ where: { id } });
 
     return {
       mensaje: `Producto con id ${id} actualizado correctamente`,
@@ -70,16 +77,44 @@ export class ProductosService {
     };
   }
 
-  // Eliminar producto
-  async delete(id: number) {
-    await this.getProducto(id); // Verifica si existe
+  // Eliminación lógica
+  async deactivate(id: number) {
+    const producto = await this.prisma.producto.findUnique({ where: { id } });
 
-    await this.prisma.producto.delete({
+    if (!producto || !producto.isActive) {
+      throw new NotFoundException('Producto no encontrado o desactivado');
+    }
+
+    await this.prisma.producto.update({
       where: { id },
+      data: { isActive: false },
     });
 
     return {
-      mensaje: `Producto con id ${id} eliminado correctamente`,
+      mensaje: `Producto con id ${id} desactivado`,
+    };
+  }
+
+  // Restaurar producto
+  async restore(id: number) {
+    const producto = await this.prisma.producto.findUnique({ where: { id } });
+
+    if (!producto) {
+      throw new NotFoundException('Producto no encontrado');
+    }
+
+    if (producto.isActive) {
+      return { mensaje: 'Producto ya está activo' };
+    }
+
+    const restaurado = await this.prisma.producto.update({
+      where: { id },
+      data: { isActive: true },
+    });
+
+    return {
+      mensaje: `Producto con id ${id} restaurado exitosamente`,
+      data: restaurado,
     };
   }
 }

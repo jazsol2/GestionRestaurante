@@ -12,7 +12,7 @@ model User {
   email     String   @unique
   name      String?
   password  String
-  isActive  Boolean  @default(true)
+  isActive  Boolean  @default(true)  // agregado
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -24,37 +24,41 @@ model Cliente {
   email     String   @unique
   telefono  String
   pedidos   Pedido[]
+  isActive  Boolean  @default(true)  // agregado
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Producto {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @unique
+  id          Int             @id @default(autoincrement())
+  nombre      String          @unique
   precio      Float
   descripcion String?
-  stock       Int 
+  stock       Int
   pedidos     PedidoDetalle[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive    Boolean         @default(true)  // agregado
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model Pedido {
-  id         Int             @id @default(autoincrement())
-  clienteId  Int
-  cliente    Cliente         @relation(fields: [clienteId], references: [id])
-  detalles   PedidoDetalle[]
-  total      Float
-  estado     String          @default("pendiente")
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  id        Int             @id @default(autoincrement())
+  clienteId Int
+  total     Float
+  estado    String          @default("pendiente")
+  isActive  Boolean         @default(true)  // agregado
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  cliente   Cliente         @relation(fields: [clienteId], references: [id])
+  detalles  PedidoDetalle[]
 }
 
 model PedidoDetalle {
-  id          Int      @id @default(autoincrement())
-  pedidoId    Int
-  productoId  Int
-  cantidad    Int
-  pedido      Pedido   @relation(fields: [pedidoId], references: [id])
-  producto    Producto @relation(fields: [productoId], references: [id])
+  id         Int      @id @default(autoincrement())
+  pedidoId   Int
+  productoId Int
+  cantidad   Int
+  isActive   Boolean  @default(true)  // agregado si quieres eliminar lógico también
+  pedido     Pedido   @relation(fields: [pedidoId], references: [id])
+  producto   Producto @relation(fields: [productoId], references: [id])
 }
