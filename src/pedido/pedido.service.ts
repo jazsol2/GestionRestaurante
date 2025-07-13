@@ -89,6 +89,7 @@ export class PedidoService {
           include: {
             producto: true,
           },
+          where:{isActive: true}
         },
       },
     });
@@ -97,7 +98,7 @@ export class PedidoService {
   // Obtener pedido por id solo si está activo
   async getPedido(id: number) {
     const pedido = await this.prisma.pedido.findUnique({
-      where: { id },
+      where: { id, isActive: true },
       include: {
         cliente: true,
         detalles: {
@@ -141,6 +142,7 @@ export class PedidoService {
     };
   }
 
+<<<<<<< HEAD
   // Eliminación lógica del pedido (desactivar)
   async deactivate(id: number) {
     const pedido = await this.prisma.pedido.findUnique({ where: { id } });
@@ -154,6 +156,21 @@ export class PedidoService {
       data: { isActive: false, estado: 'cancelado' },
     });
 
+=======
+  // Eliminar pedido
+  async delete(id: number) {
+    const pedido = await this.getPedido(id); // Verificar si existe
+    
+    await this.prisma.pedidoDetalle.updateMany({
+      where: { pedidoId: id },
+      data: {isActive: false}
+    });
+
+    await this.prisma.pedido.update({ 
+      where: { id },
+      data:{isActive: false}
+     });
+>>>>>>> e7c98beac47954687e211ed84c8c4b44131a3861
     return {
       message: 'Pedido cancelado (eliminado lógicamente)',
       data: pedido,

@@ -45,6 +45,7 @@ export class UsuarioService {
     return {
       message: 'Lista de usuarios activos',
       data: usuarios,
+      where: {isActive: true},
     };
   }
 
@@ -60,15 +61,35 @@ export class UsuarioService {
     return {
       message: 'Usuario encontrado',
       data: usuario,
+      where: {isActive: true},
     };
   }
 
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
     await this.findOne(id); // Verifica que exista y esté activo
 
+<<<<<<< HEAD
     const usuarioActualizado = await this.prisma.user.update({
       where: { id },
       data: updateUsuarioDto,
+=======
+     const usuarioActualizado = await this.prisma.user.update({
+      where:{id},
+      data: updateUsuarioDto
+     })
+    return {
+      message:'Usuario se actulizao correctamente',
+      data: usuarioActualizado,
+    }
+  }
+
+  async remove(id: number) {
+    await this.findOne(id);
+
+    await this.prisma.user.update({
+    where: {id},
+    data: {isActive: false}
+>>>>>>> e7c98beac47954687e211ed84c8c4b44131a3861
     });
 
     return {
