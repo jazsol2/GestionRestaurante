@@ -2,25 +2,32 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuarioService {
   constructor(private prisma: PrismaService) {}
 
+  // Crear usuario (con hash de contraseña)
   async create(createUsuarioDto: CreateUsuarioDto) {
     const existe = await this.prisma.user.findUnique({
       where: { email: createUsuarioDto.email },
     });
+
+    const hashedPassword = await bcrypt.hash(createUsuarioDto.password, 10);
 
     if (existe && existe.isActive) {
       throw new ConflictException('Correo electrónico ya registrado');
     }
 
     if (existe && !existe.isActive) {
-      // Restaurar usuario inactivo y actualizar info si quieres
       const usuarioRestaurado = await this.prisma.user.update({
         where: { id: existe.id },
-        data: { ...createUsuarioDto, isActive: true },
+        data: {
+          ...createUsuarioDto,
+          password: hashedPassword,
+          isActive: true,
+        },
       });
       return {
         message: 'Usuario restaurado y actualizado exitosamente',
@@ -29,7 +36,10 @@ export class UsuarioService {
     }
 
     const usuario = await this.prisma.user.create({
-      data: createUsuarioDto,
+      data: {
+        ...createUsuarioDto,
+        password: hashedPassword,
+      },
     });
 
     return {
@@ -38,6 +48,7 @@ export class UsuarioService {
     };
   }
 
+  // Listar usuarios activos
   async findAll() {
     const usuarios = await this.prisma.user.findMany({
       where: { isActive: true },
@@ -45,10 +56,10 @@ export class UsuarioService {
     return {
       message: 'Lista de usuarios activos',
       data: usuarios,
-      where: {isActive: true},
     };
   }
 
+  // Buscar un usuario por ID
   async findOne(id: number) {
     const usuario = await this.prisma.user.findUnique({
       where: { id },
@@ -61,35 +72,16 @@ export class UsuarioService {
     return {
       message: 'Usuario encontrado',
       data: usuario,
-      where: {isActive: true},
     };
   }
 
+  // Actualizar usuario
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
-    await this.findOne(id); // Verifica que exista y esté activo
+    await this.findOne(id); // Verifica existencia
 
-<<<<<<< HEAD
     const usuarioActualizado = await this.prisma.user.update({
       where: { id },
       data: updateUsuarioDto,
-=======
-     const usuarioActualizado = await this.prisma.user.update({
-      where:{id},
-      data: updateUsuarioDto
-     })
-    return {
-      message:'Usuario se actulizao correctamente',
-      data: usuarioActualizado,
-    }
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-
-    await this.prisma.user.update({
-    where: {id},
-    data: {isActive: false}
->>>>>>> e7c98beac47954687e211ed84c8c4b44131a3861
     });
 
     return {

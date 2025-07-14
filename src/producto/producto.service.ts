@@ -81,20 +81,13 @@ export class ProductosService {
   // Eliminación lógica
   async deactivate(id: number) {
     const producto = await this.prisma.producto.findUnique({ where: { id } });
-
-<<<<<<< HEAD
     if (!producto || !producto.isActive) {
       throw new NotFoundException('Producto no encontrado o desactivado');
     }
 
     await this.prisma.producto.update({
       where: { id },
-      data: { isActive: false },
-=======
-    await this.prisma.producto.update({
-      where: { id },
-      data:{IsActive: false}
->>>>>>> e7c98beac47954687e211ed84c8c4b44131a3861
+      data:{isActive: false}
     });
 
     return {
