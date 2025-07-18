@@ -24,7 +24,6 @@ model Cliente {
   email     String   @unique
   telefono  String
   pedidos   Pedido[]
-  isActive  Boolean  @default(true)  // agregado
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
@@ -37,7 +36,6 @@ model Producto {
   descripcion String?
   stock       Int
   pedidos     PedidoDetalle[]
-<<<<<<< HEAD
   isActive    Boolean         @default(true)  // agregado
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -63,31 +61,4 @@ model PedidoDetalle {
   isActive   Boolean  @default(true)  // agregado si quieres eliminar lógico también
   pedido     Pedido   @relation(fields: [pedidoId], references: [id])
   producto   Producto @relation(fields: [productoId], references: [id])
-=======
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isActive  Boolean  @default(true)
-}
-
-model Pedido {
-  id         Int             @id @default(autoincrement())
-  clienteId  Int
-  cliente    Cliente         @relation(fields: [clienteId], references: [id])
-  detalles   PedidoDetalle[]
-  total      Float
-  estado     String          @default("pendiente")
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  isActive  Boolean          @default(true)
-}
-
-model PedidoDetalle {
-  id          Int      @id @default(autoincrement())
-  pedidoId    Int
-  productoId  Int
-  cantidad    Int
-  pedido      Pedido   @relation(fields: [pedidoId], references: [id])
-  producto    Producto @relation(fields: [productoId], references: [id])
-  isActive    Boolean  @default(true)
->>>>>>> e7c98beac47954687e211ed84c8c4b44131a3861
 }
